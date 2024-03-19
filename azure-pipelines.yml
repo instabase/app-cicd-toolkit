@@ -1,0 +1,39 @@
+trigger:
+- main
+
+pool:
+  vmImage: ubuntu-latest
+strategy:
+  matrix:
+    Python310:
+      python.version: '3.10'
+
+variables:
+  GitVersion.SemVer: ''
+
+steps:
+- checkout: self
+  persistCredentials: true
+- task: UsePythonVersion@0
+  inputs:
+    versionSpec: '$(python.version)'
+  displayName: 'Use Python $(python.version)'
+
+- script: |
+    python -m pip install --upgrade pip
+    pip install -r requirements.txt
+  displayName: 'Install dependencies'
+
+- script: |
+    export TARGET_IB_API_TOKEN="$(TARGET_IB_API_TOKEN)"
+    export SOURCE_IB_API_TOKEN="$(SOURCE_IB_API_TOKEN)"
+    export TARGET_IB_HOST="$(TARGET_IB_HOST)"
+    export SOURCE_IB_HOST="$(SOURCE_IB_HOST)"
+    export TARGET_IB_PATH="$(TARGET_IB_PATH)"
+    export SOURCE_WORKING_DIR="$(SOURCE_WORKING_DIR)"
+    export SOURCE_SOLUTION_DIR="$(SOURCE_SOLUTION_DIR)"
+    export SOURCE_COMPILED_SOLUTIONS_PATH="$(SOURCE_COMPILED_SOLUTIONS_PATH)"
+    export LOCAL_SOLUTION_DIR="$(LOCAL_SOLUTION_DIR)"
+    export REL_FLOW_PATH="$(REL_FLOW_PATH)"
+    python cicd/promote_solution.py --remote_flow --download_ibsolution --set_azure_devops_env_var
+  displayName: 'Promote solution'
