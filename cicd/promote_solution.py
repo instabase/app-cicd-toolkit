@@ -94,7 +94,7 @@ def read_target_package():
   # Read package
   package_json_path = os.path.join(new_path, 'package.json')
   read_response = read_file_content_from_ib(TARGET_IB_HOST, TARGET_IB_API_TOKEN, package_json_path, use_clients=False)
-  package_json = json.loads(read_response.content)
+  package_json = json.loads(read_response)
 
   # Delete temporary solution folder
   delete_folder_or_file_from_ib(new_path, TARGET_IB_HOST, TARGET_IB_API_TOKEN, use_clients=False)
@@ -168,8 +168,7 @@ if __name__ == '__main__':
                                                     SOURCE_COMPILED_SOLUTIONS_PATH)
       resp = download_ibsolution(SOURCE_IB_HOST, SOURCE_IB_API_TOKEN, ib_solution_path, True)
       target_path = os.path.join(TARGET_IB_PATH, ib_solution_path.split('/')[-1])
-      upload_path = os.path.join(TARGET_IB_HOST, 'api/v2', 'files', target_path)
-      upload_file(TARGET_IB_HOST, TARGET_IB_API_TOKEN, upload_path, resp.content)
+      upload_file(TARGET_IB_HOST, TARGET_IB_API_TOKEN, target_path, resp.content)
 
   if args.publish_target_solution or args.local_flow or args.remote_flow:
     ib_solution_path = get_latest_ibsolution_path(TARGET_IB_API_TOKEN, TARGET_FILES_API, TARGET_IB_PATH)
