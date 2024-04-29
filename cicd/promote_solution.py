@@ -15,6 +15,10 @@ from ib_helpers import unzip_files, upload_file, read_file_content_from_ib, copy
 from migration_helpers import download_ibsolution, compile_and_package_ib_solution, \
   download_dependencies_from_dev_and_upload_to_prod
 
+from dotenv import load_dotenv
+
+load_dotenv()
+
 TARGET_IB_API_TOKEN = os.environ.get('TARGET_IB_API_TOKEN')
 SOURCE_IB_API_TOKEN = os.environ.get('SOURCE_IB_API_TOKEN')
 
@@ -166,7 +170,7 @@ if __name__ == '__main__':
     else:
       ib_solution_path = get_latest_ibsolution_path(SOURCE_IB_API_TOKEN, SOURCE_FILES_API,
                                                     SOURCE_COMPILED_SOLUTIONS_PATH)
-      resp = download_ibsolution(SOURCE_IB_HOST, SOURCE_IB_API_TOKEN, ib_solution_path, True)
+      resp = download_ibsolution(SOURCE_IB_HOST, SOURCE_IB_API_TOKEN, ib_solution_path, write_to_local=False, unzip_solution=False)
       target_path = os.path.join(TARGET_IB_PATH, ib_solution_path.split('/')[-1])
       upload_file(TARGET_IB_HOST, TARGET_IB_API_TOKEN, target_path, resp.content)
 
@@ -198,7 +202,7 @@ if __name__ == '__main__':
 
   if args.download_ibsolution or args.local_flow or args.remote_flow:
     ib_solution_path = get_latest_ibsolution_path(TARGET_IB_API_TOKEN, TARGET_FILES_API, TARGET_IB_PATH)
-    download_ibsolution(TARGET_IB_HOST, TARGET_IB_API_TOKEN, ib_solution_path)
+    download_ibsolution(TARGET_IB_HOST, TARGET_IB_API_TOKEN, ib_solution_path, write_to_local=True, unzip_solution=True)
 
   if args.set_github_actions_env_var:
     if args.local:

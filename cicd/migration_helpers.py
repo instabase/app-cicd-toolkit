@@ -1,8 +1,10 @@
-import requests
 import logging
 import json
 import os
 import time
+
+import requests
+import zipfile
 
 from ib_helpers import upload_chunks, read_file_through_api, package_solution, unzip_files, compile_solution, \
   copy_file_within_ib, read_file_content_from_ib, get_file_metadata, create_folder_if_it_does_not_exists, \
@@ -98,7 +100,7 @@ def compile_and_package_ib_solution(ib_host, api_token, solution_directory_path,
     return compile_resp, solution_resp
 
 
-def download_ibsolution(ib_host, api_token, solution_path, write_to_local=True):
+def download_ibsolution(ib_host, api_token, solution_path, write_to_local=True, unzip_solution=True):
   """
   Get the bytes content of an .ibsolution file
 
@@ -110,12 +112,19 @@ def download_ibsolution(ib_host, api_token, solution_path, write_to_local=True):
   """
 
   # TODO: Check if file exists first
-  # Read in .ibsolution file
   resp = read_file_through_api(ib_host, api_token, solution_path)
 
   if write_to_local:
     with open(solution_path.split('/')[-1], 'wb') as fd:
       fd.write(resp.content)
+
+    if unzip_solution:
+      zip_path = solution_path.split('/')[-1].replace('ibsolution', 'zip')
+      with open(zip_path, 'wb') as fd:
+        fd.write(resp.content)
+      with zipfile.ZipFile(zip_path, "r") as zip_ref:
+        zip_ref.extractall(zip_path[:-4])
+      os.remove(zip_path)
 
   return resp
 
