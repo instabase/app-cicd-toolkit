@@ -115,11 +115,12 @@ def download_ibsolution(ib_host, api_token, solution_path, write_to_local=True, 
   resp = read_file_through_api(ib_host, api_token, solution_path)
 
   if write_to_local:
-    with open(solution_path.split('/')[-1], 'wb') as fd:
+    solution_name = solution_path.split('/')[-1]
+    with open(solution_name, 'wb') as fd:
       fd.write(resp.content)
 
     if unzip_solution:
-      zip_path = solution_path.split('/')[-1].replace('ibsolution', 'zip')
+      zip_path = solution_name.replace('ibsolution', 'zip')
       with open(zip_path, 'wb') as fd:
         fd.write(resp.content)
       with zipfile.ZipFile(zip_path, "r") as zip_ref:
