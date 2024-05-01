@@ -44,6 +44,10 @@ The pipeline sets environment variables from GitHub secrets and variables and ru
 
 ## Setup
 
+### Running locally
+
+If you're not using CI tooling and running the script locally you will need to set the below environment variables. There is an option to store these variables in a `.env` file which will get loaded in using `load_dotenv()` at the beginning of the script
+
 ### Configure Repo
 
 1. Set the following git secrets in Settings > Secrets and Variables > Actions:

@@ -170,7 +170,7 @@ if __name__ == '__main__':
     else:
       ib_solution_path = get_latest_ibsolution_path(SOURCE_IB_API_TOKEN, SOURCE_FILES_API,
                                                     SOURCE_COMPILED_SOLUTIONS_PATH)
-      resp = download_ibsolution(SOURCE_IB_HOST, SOURCE_IB_API_TOKEN, ib_solution_path, write_to_local=False, unzip_solution=False)
+      resp = download_ibsolution(SOURCE_IB_HOST, SOURCE_IB_API_TOKEN, ib_solution_path)
       target_path = os.path.join(TARGET_IB_PATH, ib_solution_path.split('/')[-1])
       upload_file(TARGET_IB_HOST, TARGET_IB_API_TOKEN, target_path, resp.content)
 
