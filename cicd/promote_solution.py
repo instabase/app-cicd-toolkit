@@ -9,11 +9,66 @@ import shutil
 from urllib.parse import quote
 import argparse
 import re
+from dotenv import load_dotenv
 
 from ib_helpers import unzip_files, upload_file, read_file_content_from_ib, copy_file_within_ib, \
   publish_to_marketplace, delete_folder_or_file_from_ib, deploy_solution
 from migration_helpers import download_ibsolution, compile_and_package_ib_solution, \
   download_dependencies_from_dev_and_upload_to_prod
+
+# Strings for help message
+help_prog="promote_solution.py"
+help_compile_source_solution="Compiles solution in SOURCE_IB_HOST/SOURCE_SOLUTION_DIR environment variables"
+help_publish_source_solution="Publishes solution to Deployed Solutions on SOURCE_IB_HOST"
+help_promote_solution_to_target="Uploads to the solution to the target environment on TARGET_IB_HOST/TARGET_IB_PATH"
+help_publish_target_solution="Publishes solution to Deployed Solutions on TARGET_IB_HOST/TARGET_IB_PATH. Use the --local flag to upload code from a repository"
+help_upload_dependencies="Downloads solution and dependencies from SOURCE_IB_HOST and uploads to TARGET_IB_HOST/TARGET_IB_PATH"
+help_download_ibsolution="Downloads the .ibsolution file to the local filesystem"
+help_set_github_actions_env_var="Sets PACKAGE_VERSION environment variable to be used in later steps in the GitHub Actions pipleline"
+help_set_azure_devops_env_var="Sets PACKAGE_VERSION environment to be used in later steps in the Azure DevOps pipeline"
+help_local="To be used alongside above flags. This will promote a solution from the local repository rather than a remote Instabase environment using the LOCAL_SOLUTION_DIR"
+help_remote="To be used alongside above flags. This will promote a solution from a source Instabase environment"
+help_local_flow="Performs series of above steps for a local workflow"
+help_remote_flow="Performs series of above steps for a remote workflow, --compile_source_solution, --set_azure_devops_env_var, and --set_github_actions_env_var are not included in these so need to be used too"
+help_marketplace="Publishes solution to Marketplace. If not used, then Deployed Solutions will be used"
+help_epilog='''
+environment variables:
+  The following environment variables should be set depending on the action being performed:
+
+  TARGET_IB_API_TOKEN             API token for source environment.
+  SOURCE_IB_API_TOKEN             API token for target environment.
+  TARGET_IB_HOST                  FQDN of target host, e.g. https://host.dev.instabase.com.
+  SOURCE_IB_HOST                  FQDN of target host, e.g. https://host.uat.instabase.com.
+  TARGET_IB_PATH                  Path where solution will be uploaded.
+  SOURCE_WORKING_DIR              Path in source enviornment's filesystem for staging of dependencies.
+  SOURCE_SOLUTION_DIR             Path to solution in source envionment.
+  SOURCE_COMPILED_SOLUTIONS_PATH  Path where .ibsolution files are generated.
+  LOCAL_SOLUTION_DIR              Diredctory in local repository that contains solution code. Blank if using remote_flow.
+  REL_FLOW_PATH                   Path to flow relative to SOURCE_SOLUTION_DIR, e.g. Flow/some_flow.ibflow.
+
+  Environment variables can also be saved in a .env file at the root of the project in dotenv format.
+'''
+
+# Load the .env file if it exists
+load_dotenv()
+
+env_vars = [
+  'TARGET_IB_API_TOKEN',
+  'SOURCE_IB_API_TOKEN',
+  'TARGET_IB_HOST',
+  'SOURCE_IB_HOST',
+  'TARGET_IB_PATH',
+  'SOURCE_WORKING_DIR',
+  'SOURCE_SOLUTION_DIR',
+  'SOURCE_COMPILED_SOLUTIONS_PATH',
+  'LOCAL_SOLUTION_DIR',
+  'REL_FLOW_PATH',
+]
+
+if not set(os.environ).issuperset(env_vars):
+  print("Error: One or more environment variables do not exist.")
+  print(help_epilog)
+  quit(code=1)
 
 TARGET_IB_API_TOKEN = os.environ.get('TARGET_IB_API_TOKEN')
 SOURCE_IB_API_TOKEN = os.environ.get('SOURCE_IB_API_TOKEN')
@@ -120,20 +175,25 @@ def copy_solution_to_working_dir(new_solution_dir):
 
 
 if __name__ == '__main__':
-  parser = argparse.ArgumentParser()
-  parser.add_argument('--promote_solution_to_target', action='store_true')
-  parser.add_argument('--publish_source_solution', action='store_true')
-  parser.add_argument('--publish_target_solution', action='store_true')
-  parser.add_argument('--upload_dependencies', action='store_true')
-  parser.add_argument('--compile_source_solution', action='store_true')
-  parser.add_argument('--set_github_actions_env_var', action='store_true')
-  parser.add_argument('--set_azure_devops_env_var', action='store_true')
-  parser.add_argument('--download_ibsolution', action='store_true')
-  parser.add_argument('--local', action='store_true')
-  parser.add_argument('--remote', dest='local', action='store_false')
-  parser.add_argument('--local_flow', action='store_true')
-  parser.add_argument('--remote_flow', action='store_true')
-  parser.add_argument('--marketplace', action='store_true')
+  parser = argparse.ArgumentParser(
+    formatter_class=argparse.RawDescriptionHelpFormatter,
+    prog=help_prog,
+    usage='python %(prog)s [options]',
+    epilog=help_epilog
+  )
+  parser.add_argument('--promote_solution_to_target', action='store_true',help=help_promote_solution_to_target)
+  parser.add_argument('--publish_source_solution', action='store_true',help=help_publish_source_solution)
+  parser.add_argument('--publish_target_solution', action='store_true',help=help_publish_target_solution)
+  parser.add_argument('--upload_dependencies', action='store_true',help=help_upload_dependencies)
+  parser.add_argument('--compile_source_solution', action='store_true',help=help_compile_source_solution)
+  parser.add_argument('--set_github_actions_env_var', action='store_true',help=help_set_github_actions_env_var)
+  parser.add_argument('--set_azure_devops_env_var', action='store_true',help=help_set_azure_devops_env_var)
+  parser.add_argument('--download_ibsolution', action='store_true',help=help_download_ibsolution)
+  parser.add_argument('--local', action='store_true',help=help_local)
+  parser.add_argument('--remote', dest='local', action='store_false',help=help_remote)
+  parser.add_argument('--local_flow', action='store_true',help=help_local_flow)
+  parser.add_argument('--remote_flow', action='store_true',help=help_remote_flow)
+  parser.add_argument('--marketplace', action='store_true',help=help_marketplace)
   parser.set_defaults(local=False)
   args = parser.parse_args()
 
@@ -215,3 +275,6 @@ if __name__ == '__main__':
       package = read_target_package()
     version = package['version']
     print(f'##vso[task.setvariable variable=PACKAGE_VERSION;]{version}')
+
+  if not any(vars(args).values()):
+    parser.print_help()
