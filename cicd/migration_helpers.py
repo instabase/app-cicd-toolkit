@@ -5,6 +5,7 @@ import time
 
 import requests
 import zipfile
+from pathlib import Path
 
 from ib_helpers import upload_chunks, read_file_through_api, package_solution, unzip_files, compile_solution, \
   copy_file_within_ib, read_file_content_from_ib, get_file_metadata, create_folder_if_it_does_not_exists, \
