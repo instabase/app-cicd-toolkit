@@ -116,7 +116,7 @@ def download_ibsolution(ib_host, api_token, solution_path, write_to_local=False,
   resp = read_file_through_api(ib_host, api_token, solution_path)
 
   if write_to_local:
-    solution_name = solution_path.split('/')[-1]
+    solution_name = Path(solution_path).name
     with open(solution_name, 'wb') as fd:
       fd.write(resp.content)
 
