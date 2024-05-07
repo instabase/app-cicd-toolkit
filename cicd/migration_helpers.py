@@ -4,9 +4,9 @@ import os
 import time
 
 import requests
-import zipfile
+from zipfile import ZipFile
 
-from ib_helpers import upload_chunks, read_file_through_api, package_solution, unzip_files, compile_solution, \
+from cicd.ib_helpers import upload_chunks, read_file_through_api, package_solution, unzip_files, compile_solution, \
   copy_file_within_ib, read_file_content_from_ib, get_file_metadata, create_folder_if_it_does_not_exists, \
   wait_until_job_finishes
 
@@ -123,7 +123,7 @@ def download_ibsolution(ib_host, api_token, solution_path, write_to_local=False,
       zip_path = solution_name.replace('ibsolution', 'zip')
       with open(zip_path, 'wb') as fd:
         fd.write(resp.content)
-      with zipfile.ZipFile(zip_path, "r") as zip_ref:
+      with ZipFile(zip_path, "r") as zip_ref:
         zip_ref.extractall(zip_path[:-4])
       os.remove(zip_path)
 
