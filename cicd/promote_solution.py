@@ -15,10 +15,6 @@ from ib_helpers import unzip_files, upload_file, read_file_content_from_ib, copy
 from migration_helpers import download_ibsolution, compile_and_package_ib_solution, \
   download_dependencies_from_dev_and_upload_to_prod
 
-from dotenv import load_dotenv
-
-load_dotenv()
-
 TARGET_IB_API_TOKEN = os.environ.get('TARGET_IB_API_TOKEN')
 SOURCE_IB_API_TOKEN = os.environ.get('SOURCE_IB_API_TOKEN')
 
