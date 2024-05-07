@@ -1,4 +1,5 @@
 """Collection of unit tests for IB Helpers"""
+
 from unittest import mock
 import pytest
 from requests.models import Response
