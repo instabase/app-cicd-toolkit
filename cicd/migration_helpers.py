@@ -125,7 +125,8 @@ def download_ibsolution(ib_host, api_token, solution_path, write_to_local=False,
       with open(zip_path, 'wb') as fd:
         fd.write(resp.content)
       with ZipFile(zip_path, "r") as zip_ref:
-        zip_ref.extractall(zip_path[:-4])
+        unzip_dir = Path(zip_path.parent, zip_path.stem)
+        zip_ref.extractall(unzip_dir)
       os.remove(zip_path)
 
   return resp
