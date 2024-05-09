@@ -46,7 +46,7 @@ def migrate_solution(source_ib_host, target_ib_host, source_api_token, target_ap
   file_path = os.path.join(solution_build_dir_path, f'{package["name"]}-{package["version"]}.ibsolution')
 
   # Download ibsolution from dev environment
-  resp = download_ibsolution(source_ib_host, source_api_token, file_path, False)
+  resp = download_ibsolution(source_ib_host, source_api_token, file_path)
 
   # Upload IB Solution to Prod
   solution_name = f'{package["name"]}-{package["version"]}.ibsolution'
