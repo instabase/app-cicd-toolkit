@@ -30,11 +30,11 @@ jobs:
     - name: Upload and compile IB solution
       env:
         TARGET_IB_API_TOKEN: ${{ secrets.TARGET_IB_API_TOKEN }}
-        SOURCE_IB_API_TOKEN: ${{ vars.SOURCE_IB_API_TOKEN }}
-        TARGET_IB_HOST: ${{ secrets.TARGET_IB_HOST }}
+        SOURCE_IB_API_TOKEN: ${{ secrets.SOURCE_IB_API_TOKEN }}
+        TARGET_IB_HOST: ${{ vars.TARGET_IB_HOST }}
         SOURCE_IB_HOST: ${{ vars.SOURCE_IB_HOST }}
         TARGET_IB_PATH: ${{ vars.TARGET_IB_PATH }}
-        SOURCE_WORKING_DIR: ${{ secrets.SOURCE_WORKING_DIR }}
+        SOURCE_WORKING_DIR: ${{ vars.SOURCE_WORKING_DIR }}
         SOURCE_SOLUTION_DIR: ${{ vars.SOURCE_SOLUTION_DIR }}
         SOURCE_COMPILED_SOLUTIONS_PATH: ${{ vars.SOURCE_COMPILED_SOLUTIONS_PATH }}
         LOCAL_SOLUTION_DIR: ${{ vars.LOCAL_SOLUTION_DIR }}
@@ -50,7 +50,7 @@ jobs:
         git config --global --add safe.directory /__w/${{ github.event.repository.name }}/*
         git add '*.ibsolution'
         git commit -m "Add ibsolution file"
-        git tag -a ${{ env.PACKAGE_VERSION }}
+        git tag -a ${{ env.PACKAGE_VERSION }} -m "Version ${{ env.PACKAGE_VERSION }}"
         git push
         echo ${{ env.PACKAGE_VERSION }}
       env:
