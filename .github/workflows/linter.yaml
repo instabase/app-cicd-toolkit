@@ -13,3 +13,14 @@ jobs:
         with:
           options: "--verbose"
           src: "./cicd"
+
+      - name: Commit changes
+        run: |
+          git config --global user.email "no-reply@github.com"
+          git config --global user.name "GitHub Actions"
+          git config --global --add safe.directory /__w/${{ github.event.repository.name }}/*
+          git add .
+          git commit -m "Commit black linting changes"
+          git push
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
