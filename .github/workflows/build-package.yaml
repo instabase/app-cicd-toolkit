@@ -42,11 +42,20 @@ jobs:
              echo
              "PYTHON_PKG_VERSION=$(cat pyproject.toml | ./dasel -r toml '.project.version' | tr -d "'")"
              >> "$GITHUB_OUTPUT"
+      - name: Get package path
+        id: python-package-path
+        run: >-
+             echo
+             "PYTHON_PKG_PATH=$(ls dist/*.whl)"
+             >> "$GITHUB_OUTPUT"
       - name: Publish GitHub Release
-        #uses: ncipollo/release-action@v1
+        uses: ncipollo/release-action@v1
         env:
           PYTHON_PKG_VERSION: ${{ steps.python-package-version.outputs.PYTHON_PKG_VERSION }}
-        run: "echo Version number is $PYTHON_PKG_VERSION"
-        # with:
-        #   tag: ${{ env.PYTHON_PKG_VERSION }}
-        #   artifacts: "dist/*.ibsolution"
+          PYTHON_PKG_PATH: ${{ steps.python-package-path.outputs.PYTHON_PKG_PATH }}
+        with:
+          tag: ${{ env.PYTHON_PKG_VERSION }}
+          artifacts: ${{ env.PYTHON_PKG_PATH }}
+          artifactErrorsFailBuild: true
+          generateReleaseNotes: true
+          makeLatest: true
