@@ -2,7 +2,7 @@
 
 from unittest.mock import mock_open, patch, Mock
 from requests.models import Response
-from cicd.migration_helpers import download_ibsolution
+from ib_cicd.migration_helpers import download_ibsolution
 from tests.fixtures import (
     ib_host_url,
     ib_api_token,
@@ -11,7 +11,7 @@ from tests.fixtures import (
 )
 
 
-@patch("cicd.ib_helpers.requests")
+@patch("ib_cicd.ib_helpers.requests")
 def test_download_ibsolution(mock_requests, ib_host_url, ib_api_token):
     mocked_response = Mock(spec=Response)
     mocked_response.status_code = 200
@@ -29,10 +29,10 @@ def test_download_ibsolution(mock_requests, ib_host_url, ib_api_token):
     assert resp.status_code == 200
 
 
-@patch("cicd.migration_helpers.os.remove")
-@patch("cicd.migration_helpers.ZipFile")
+@patch("ib_cicd.migration_helpers.os.remove")
+@patch("ib_cicd.migration_helpers.ZipFile")
 @patch("builtins.open", new_callable=mock_open)
-@patch("cicd.ib_helpers.requests")
+@patch("ib_cicd.ib_helpers.requests")
 def test_download_ibsolution_and_unzip(
     mock_requests, mock_open, mock_zip, mock_remove, ib_host_url, ib_api_token
 ):
