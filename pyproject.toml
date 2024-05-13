@@ -13,10 +13,21 @@ classifiers = [
     "Programming Language :: Python :: 3",
     "Operating System :: OS Independent",
 ]
+dependencies = [
+  "requests",
+  "python-dotenv"
+]
 
-# Pick up dependencies from requirements.txt
-# and requirements-test.txt
-dynamic = ["dependencies", "optional-dependencies"]
+[project.optional-dependencies]
+test = [
+  "black",
+  "pytest",
+  "pytest-cov",
+  "pytest-sugar"
+]
+
+[project.scripts]
+ib-cicd = "ib_cicd.promote_solution:main"
 
 [build-system]
 requires = ["hatchling"]
@@ -24,8 +35,5 @@ build-backend = "hatchling.build"
 
 [tool.hatch.build.targets.wheel]
 include = [
-  "cicd/",
+  "ib_cicd/",
 ]
-
-[tool.hatch.build.targets.wheel.sources]
-"cicd/" = "ib_cicd"
