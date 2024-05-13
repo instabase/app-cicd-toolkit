@@ -38,7 +38,10 @@ jobs:
             && chmod +x dasel
       - name: Set package version
         id: python-package-version
-        run: echo "PYTHON_PKG_VERSION=$(cat pyproject.toml | ./dasel -r toml '.project.version')" >> "$GITHUB_OUTPUT"
+        run: >-
+             echo
+             "PYTHON_PKG_VERSION=$(cat pyproject.toml | ./dasel -r toml '.project.version' | tr -d "'")"
+             >> "$GITHUB_OUTPUT"
       - name: Publish GitHub Release
         #uses: ncipollo/release-action@v1
         env:
