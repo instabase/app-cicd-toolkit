@@ -26,3 +26,6 @@ build-backend = "hatchling.build"
 include = [
   "cicd/",
 ]
+
+[tool.hatch.build.targets.wheel.sources]
+"cicd/" = "ib_cicd"
