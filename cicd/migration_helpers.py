@@ -130,9 +130,6 @@ def compile_and_package_ib_solution(
 
 
 
-
-
-
 def download_ibsolution(ib_host, api_token, solution_path, write_to_local=True):
     """
     Get the bytes content of an .ibsolution file

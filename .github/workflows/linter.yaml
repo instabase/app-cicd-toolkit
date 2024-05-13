@@ -8,3 +8,8 @@ jobs:
     steps:
       - uses: actions/checkout@v3
       - uses: psf/black@stable
+        name: Format with black
+        id: action_black
+        with:
+          options: "--verbose"
+          src: "./cicd"
