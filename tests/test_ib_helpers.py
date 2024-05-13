@@ -1,8 +1,14 @@
 """Collection of unit tests for IB Helpers"""
+
 from unittest import mock
 from requests.models import Response
 from cicd.ib_helpers import upload_file
-from tests.fixtures import ib_host_url, ib_api_token, _MOCK_IB_HOST_URL, _MOCK_AUTH_HEADERS
+from tests.fixtures import (
+    ib_host_url,
+    ib_api_token,
+    _MOCK_IB_HOST_URL,
+    _MOCK_AUTH_HEADERS,
+)
 
 
 @mock.patch("cicd.ib_helpers.requests")
