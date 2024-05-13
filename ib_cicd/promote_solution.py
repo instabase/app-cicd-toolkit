@@ -147,8 +147,7 @@ def copy_solution_to_working_dir(new_solution_dir):
         )
 
 
-<<<<<<< HEAD:cicd/promote_solution.py
-if __name__ == "__main__":
+def main():
     parser = argparse.ArgumentParser()
     parser.add_argument("--promote_solution_to_target", action="store_true")
     parser.add_argument("--publish_source_solution", action="store_true")
@@ -165,25 +164,6 @@ if __name__ == "__main__":
     parser.add_argument("--marketplace", action="store_true")
     parser.set_defaults(local=False)
     args = parser.parse_args()
-=======
-def main():
-  parser = argparse.ArgumentParser()
-  parser.add_argument('--promote_solution_to_target', action='store_true')
-  parser.add_argument('--publish_source_solution', action='store_true')
-  parser.add_argument('--publish_target_solution', action='store_true')
-  parser.add_argument('--upload_dependencies', action='store_true')
-  parser.add_argument('--compile_source_solution', action='store_true')
-  parser.add_argument('--set_github_actions_env_var', action='store_true')
-  parser.add_argument('--set_azure_devops_env_var', action='store_true')
-  parser.add_argument('--download_ibsolution', action='store_true')
-  parser.add_argument('--local', action='store_true')
-  parser.add_argument('--remote', dest='local', action='store_false')
-  parser.add_argument('--local_flow', action='store_true')
-  parser.add_argument('--remote_flow', action='store_true')
-  parser.add_argument('--marketplace', action='store_true')
-  parser.set_defaults(local=False)
-  args = parser.parse_args()
->>>>>>> 3120b56 (rename cicd/ to ib_cicd/):ib_cicd/promote_solution.py
 
     if args.compile_source_solution:
         new_solution_dir = os.path.join(
@@ -294,7 +274,6 @@ def main():
         version = package["version"]
         set_output_version_github(version)
 
-<<<<<<< HEAD:cicd/promote_solution.py
     if args.set_azure_devops_env_var:
         if args.local:
             package = read_local_package_json(LOCAL_SOLUTION_DIR)
@@ -302,16 +281,7 @@ def main():
             package = read_target_package()
         version = package["version"]
         print(f"##vso[task.setvariable variable=PACKAGE_VERSION;]{version}")
-=======
-  if args.set_azure_devops_env_var:
-    if args.local:
-      package = read_local_package_json(LOCAL_SOLUTION_DIR)
-    else:
-      package = read_target_package()
-    version = package['version']
-    print(f'##vso[task.setvariable variable=PACKAGE_VERSION;]{version}')
 
 
-if __name__ == '__main__':
-  main()
->>>>>>> 3120b56 (rename cicd/ to ib_cicd/):ib_cicd/promote_solution.py
+if __name__ == "__main__":
+    main()
