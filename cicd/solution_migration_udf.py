@@ -62,7 +62,7 @@ def migrate_solution(
     )
 
     # Download ibsolution from dev environment
-    resp = download_ibsolution(source_ib_host, source_api_token, file_path, False)
+    resp = download_ibsolution(source_ib_host, source_api_token, file_path)
 
     # Upload IB Solution to Prod
     solution_name = f'{package["name"]}-{package["version"]}.ibsolution'
