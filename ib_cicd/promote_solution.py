@@ -10,7 +10,7 @@ from urllib.parse import quote
 import argparse
 import re
 
-from ib_helpers import (
+from ib_cicd.ib_helpers import (
     unzip_files,
     upload_file,
     read_file_content_from_ib,
@@ -19,7 +19,7 @@ from ib_helpers import (
     delete_folder_or_file_from_ib,
     deploy_solution,
 )
-from migration_helpers import (
+from ib_cicd.migration_helpers import (
     download_ibsolution,
     compile_and_package_ib_solution,
     download_dependencies_from_dev_and_upload_to_prod,
@@ -147,7 +147,7 @@ def copy_solution_to_working_dir(new_solution_dir):
         )
 
 
-if __name__ == "__main__":
+def main():
     parser = argparse.ArgumentParser()
     parser.add_argument("--promote_solution_to_target", action="store_true")
     parser.add_argument("--publish_source_solution", action="store_true")
@@ -281,3 +281,7 @@ if __name__ == "__main__":
             package = read_target_package()
         version = package["version"]
         print(f"##vso[task.setvariable variable=PACKAGE_VERSION;]{version}")
+
+
+if __name__ == "__main__":
+    main()

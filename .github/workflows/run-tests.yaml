@@ -1,15 +1,16 @@
-name: Python Checks
+name: Tests
 
-on: [push]
+on: [push, pull_request]
 
 jobs:
-  build:
+  run-tests:
+    name: Run Tests 🔍
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
       - name: Set up Python
         # This is the version of the action for setting up Python, not the Python version.
-        uses: actions/setup-python@v4
+        uses: actions/setup-python@v5
         with:
           python-version: "3.11"
           cache: 'pip'

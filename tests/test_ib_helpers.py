@@ -2,7 +2,7 @@
 
 from unittest import mock
 from requests.models import Response
-from cicd.ib_helpers import upload_file
+from ib_cicd.ib_helpers import upload_file
 from tests.fixtures import (
     ib_host_url,
     ib_api_token,
@@ -11,7 +11,7 @@ from tests.fixtures import (
 )
 
 
-@mock.patch("cicd.ib_helpers.requests")
+@mock.patch("ib_cicd.ib_helpers.requests")
 def test_upload_file(mock_requests, ib_host_url, ib_api_token):
     # Arrange
     mocked_response = mock.Mock(spec=Response)

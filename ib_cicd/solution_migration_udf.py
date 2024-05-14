@@ -1,5 +1,5 @@
-from ib_helpers import upload_file, publish_to_marketplace
-from migration_helpers import (
+from ib_cicd.ib_helpers import upload_file, publish_to_marketplace
+from ib_cicd.migration_helpers import (
     read_file_through_api,
     download_ibsolution,
     get_dependencies_from_ibsolution,

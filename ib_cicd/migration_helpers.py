@@ -7,7 +7,7 @@ import requests
 from zipfile import ZipFile
 from pathlib import Path
 
-from cicd.ib_helpers import (
+from ib_cicd.ib_helpers import (
     upload_chunks,
     read_file_through_api,
     package_solution,
