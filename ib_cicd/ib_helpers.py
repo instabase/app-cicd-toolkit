@@ -224,7 +224,10 @@ def compile_solution(ib_host, api_token, solution_path, relative_flow_path):
                 solution_path, *relative_flow_path.split("/")[:-1]
             ),
             "predefined_binary_path": os.path.join(solution_path, bin_path),
-            "settings": {"flow_file": relative_flow_path.split("/")[-1]},
+            "settings": {
+                "flow_file": relative_flow_path.split("/")[-1],
+                "is_flow_v3": True
+            },
         }
     )
     resp = requests.post(
