@@ -1,6 +1,6 @@
 [project]
 name = "instabase-app-cicd-toolkit"
-version = "0.0.1"
+version = "0.0.2"
 requires-python = ">=3.10"
 authors = [
     { name = "Hannah Roiter", email = "hannah.roiter@instabase.com" },

@@ -20,8 +20,10 @@ steps:
   displayName: 'Use Python $(python.version)'
 
 - script: |
-    pip install .
-  displayName: 'Install dependencies'
+      python -m pip install --upgrade pip
+      pip install pipx
+      pipx install https://github.com/instabase/app-cicd-toolkit/releases/download/0.0.2/instabase_app_cicd_toolkit-0.0.2-py3-none-any.whl
+  displayName: 'Install ib-cicd library'
 
 - script: |
     export TARGET_IB_API_TOKEN="$(TARGET_IB_API_TOKEN)"
