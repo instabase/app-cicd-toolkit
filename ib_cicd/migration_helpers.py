@@ -18,6 +18,7 @@ from ib_cicd.ib_helpers import (
     get_file_metadata,
     create_folder_if_it_does_not_exists,
     wait_until_job_finishes,
+    publish_to_marketplace,
 )
 
 
@@ -391,3 +392,18 @@ def download_dependencies_from_dev_and_upload_to_prod(
         upload_paths.append(uploaded_path)
 
     return upload_paths
+
+
+def publish_dependencies(uploaded_ibsolutions, ib_host, api_token):
+    """
+    Publish list of dependencies to marketplace
+    :param uploaded_ibsolutions: (list) list of paths to ibsolution dependency paths on the IB filesystem
+    :param ib_host: (string) IB host url (e.g. https://www.instabase.com)
+    :param api_token: (string) api token for IB environment
+    :return: None
+    """
+    for ib_solution_path in uploaded_ibsolutions:
+        publish_resp = publish_to_marketplace(ib_host, api_token, ib_solution_path)
+        logging.info(
+            "Publish response for {}: {}".format(ib_solution_path, publish_resp)
+        )

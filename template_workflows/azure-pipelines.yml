@@ -35,5 +35,5 @@ steps:
     export SOURCE_COMPILED_SOLUTIONS_PATH="$(SOURCE_COMPILED_SOLUTIONS_PATH)"
     export LOCAL_SOLUTION_DIR="$(LOCAL_SOLUTION_DIR)"
     export REL_FLOW_PATH="$(REL_FLOW_PATH)"
-    python cicd/promote_solution.py --remote_flow --download_ibsolution --set_azure_devops_env_var
+    python ib_cicd/promote_solution.py --remote_flow --download_ibsolution --set_azure_devops_env_var
   displayName: 'Promote solution'

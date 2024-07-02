@@ -33,15 +33,15 @@ jobs:
         SOURCE_IB_API_TOKEN: ${{ vars.SOURCE_IB_API_TOKEN }}
         TARGET_IB_HOST: ${{ secrets.TARGET_IB_HOST }}
         SOURCE_IB_HOST: ${{ vars.SOURCE_IB_HOST }}
+        SOLUTION_BUILDER_NAME: ${{ vars.SOLUTION_BUILDER_NAME }}
+        FLOW_NAME: ${{ secrets.FLOW_NAME }}
+        WORKSPACE_DRIVE_PATH: ${{ vars.WORKSPACE_DRIVE_PATH }}
         TARGET_IB_PATH: ${{ vars.TARGET_IB_PATH }}
-        SOURCE_WORKING_DIR: ${{ secrets.SOURCE_WORKING_DIR }}
-        SOURCE_SOLUTION_DIR: ${{ vars.SOURCE_SOLUTION_DIR }}
-        SOURCE_COMPILED_SOLUTIONS_PATH: ${{ vars.SOURCE_COMPILED_SOLUTIONS_PATH }}
-        LOCAL_SOLUTION_DIR: ${{ vars.LOCAL_SOLUTION_DIR }}
-        REL_FLOW_PATH: ${{ vars.REL_FLOW_PATH }}
+        SOURCE_WORKING_DIR: ${{ vars.SOURCE_WORKING_DIR }}
+        DEPENDENCIES: ${{ vars.DEPENDENCIES }}
         
       run: |
-        python -u cicd/promote_solution.py --remote_flow --download_ibsolution --set_github_actions_env_var
+        python -u ib_cicd/promote_solution.py --remote_flow --download_ibsolution --set_github_actions_env_var --compile_source_solution
 
     - name: Commit changes
       run: |

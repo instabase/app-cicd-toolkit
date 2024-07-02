@@ -5,6 +5,7 @@ import json
 from urllib.parse import quote
 import time
 import logging
+import pathlib
 
 
 def __get_file_api_root(ib_host, api_version="v2", add_files_suffix=True):
@@ -199,7 +200,14 @@ def unzip_files(ib_host, api_token, zip_path, destination_path=None):
     return resp
 
 
-def compile_solution(ib_host, api_token, solution_path, relative_flow_path):
+def compile_solution(
+    ib_host,
+    api_token,
+    solution_path,
+    relative_flow_path=None,
+    solution_builder=False,
+    solution_version=None,
+):
     """
     Compiles a flow
 
@@ -208,24 +216,39 @@ def compile_solution(ib_host, api_token, solution_path, relative_flow_path):
     :param solution_path: (string) path to root folder of solution
                               (e.g. ganan.prabaharan/testing/fs/Instabase Drive/testing_solution)
     :param relative_flow_path: relative path of flow from solution_path (e.g. testing_flow.ibflow)
-                               full flow path is {solutionPath}/{relative_flow_path}
+                               full flow path is {solutionPath}/{relative_flow_path} (used for filesystem projects only)
+    :param solution_builder: (bool) if the solution to be compiled is a solution builder project
+    :param solution_version: (string) version of compiled solution (used for solution builder projects only)
     :return: Response object
     """
     # TODO: API docs issue
     path_encoded = quote(solution_path)
 
     url = os.path.join(*[ib_host, "api/v1", "flow_binary", "compile", path_encoded])
-    bin_path = relative_flow_path.replace(".ibflow", ".ibflowbin")
+
+    if solution_builder:
+        p = pathlib.Path(solution_path)
+        bin_path = os.path.join(
+            *p.parts[:-1], "builds", f"{solution_version}.ibflowbin"
+        )
+        flow_project_root = os.path.join(*p.parts[:7])
+        flow_path = os.path.join(*p.parts[7:])
+    else:
+        bin_path = relative_flow_path.replace(".ibflow", ".ibflowbin")
+        bin_path = os.path.join(solution_path, bin_path)
+        flow_project_root = os.path.join(
+            solution_path, *relative_flow_path.split("/")[:-1]
+        )
+        flow_path = relative_flow_path.split("/")[-1]
+
     headers = {"Authorization": "Bearer {0}".format(api_token)}
     data = json.dumps(
         {
             "binary_type": "Single Flow",
-            "flow_project_root": os.path.join(
-                solution_path, *relative_flow_path.split("/")[:-1]
-            ),
-            "predefined_binary_path": os.path.join(solution_path, bin_path),
+            "flow_project_root": flow_project_root,
+            "predefined_binary_path": bin_path,
             "settings": {
-                "flow_file": relative_flow_path.split("/")[-1],
+                "flow_file": flow_path,
                 "is_flow_v3": True,
             },
         }
@@ -382,6 +405,34 @@ def check_job_status(ib_host, job_id, job_type, api_token):
     return resp
 
 
+def list_directory(ib_host, folder, api_token):
+    """
+    Lists a directory on the IB filesystem and returns full paths
+
+    :param ib_host: (string) IB host url (e.g. https://www.instabase.com)
+    :param folder: (string) path to folder to list
+    :param api_token: (string) api token for IB environment
+    :return: (list) List of paths in directory
+    """
+    file_api_root = __get_file_api_root(ib_host)
+    url = os.path.join(file_api_root, folder)
+
+    params = {"expect-node-type": "folder"}
+    headers = {"Authorization": "Bearer {0}".format(api_token)}
+
+    resp = requests.get(url, headers=headers, params=params)
+
+    # Verify request is successful
+    content = json.loads(resp.content)
+    if resp.status_code != 200 or (
+        "status" in content and content["status"] == "ERROR"
+    ):
+        raise Exception(f"Error checking job status: {resp.content}")
+
+    nodes = content["nodes"]
+    return [node["full_path"] for node in nodes]
+
+
 def wait_until_job_finishes(ib_host, job_id, job_type, api_token):
     """
     Helper function to continuously wait until a job finishes (uses job status api to determine this)
@@ -449,6 +500,9 @@ def deploy_solution(ib_host, api_token, ibsolution_path):
     headers = {"Authorization": "Bearer {0}".format(api_token)}
     url = f"{file_api_root}/solutions/deployed"
 
+    print("**!!!!!!!")
+    print(ibsolution_path)
+
     args = {
         "solution_path": ibsolution_path,
     }
@@ -460,6 +514,6 @@ def deploy_solution(ib_host, api_token, ibsolution_path):
         job_id = json.loads(resp.content)["job_id"]
         logging.info(f"Solution deployed with job ID {job_id}")
     except:
-        logging.info(f"Solution publish status exception: {resp.content}")
+        logging.warning(f"Solution publish status exception: {resp.content}")
 
     return resp
