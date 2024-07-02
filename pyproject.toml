@@ -28,6 +28,7 @@ test = [
 
 [project.scripts]
 ib-cicd = "ib_cicd.promote_solution:main"
+ib-cicd-solution-builder = "ib_cicd.promote_sb_solution:main"
 
 [build-system]
 requires = ["hatchling"]
