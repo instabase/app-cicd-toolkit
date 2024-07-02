@@ -1,13 +1,10 @@
 import time
 
-import requests
-import logging
 import json
 import pathlib
 import os
 import shutil
 import argparse
-import re
 
 from ib_cicd.ib_helpers import (
     unzip_files,
