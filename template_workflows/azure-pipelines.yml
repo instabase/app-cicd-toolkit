@@ -20,8 +20,7 @@ steps:
   displayName: 'Use Python $(python.version)'
 
 - script: |
-    python -m pip install --upgrade pip
-    pip install -r requirements.txt
+    pip install .
   displayName: 'Install dependencies'
 
 - script: |
@@ -35,5 +34,5 @@ steps:
     export SOURCE_COMPILED_SOLUTIONS_PATH="$(SOURCE_COMPILED_SOLUTIONS_PATH)"
     export LOCAL_SOLUTION_DIR="$(LOCAL_SOLUTION_DIR)"
     export REL_FLOW_PATH="$(REL_FLOW_PATH)"
-    python ib_cicd/promote_solution.py --remote_flow --download_ibsolution --set_azure_devops_env_var
+    ib-cicd --remote_flow --download_ibsolution --set_azure_devops_env_var
   displayName: 'Promote solution'

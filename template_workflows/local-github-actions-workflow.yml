@@ -32,7 +32,7 @@ jobs:
       run: |
         python -m pip install --upgrade pip
         pip install flake8 pytest
-        if [ -f requirements.txt ]; then pip install -r requirements.txt; fi
+        pip install .
     - name: Upload and compile IB solution
       env:
         TARGET_IB_API_TOKEN: ${{ secrets.TARGET_IB_API_TOKEN }}
@@ -47,7 +47,7 @@ jobs:
         REL_FLOW_PATH: ${{ vars.REL_FLOW_PATH }}
 
       run: |
-        python -u ib_cicd/promote_solution.py --local_flow --download_ibsolution --set_github_actions_env_var
+        ib-cicd --local_flow --download_ibsolution --set_github_actions_env_var
 
     - name: Create release and upload artifacts
       uses: ncipollo/release-action@v1
