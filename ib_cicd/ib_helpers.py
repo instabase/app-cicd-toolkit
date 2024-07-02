@@ -417,20 +417,29 @@ def list_directory(ib_host, folder, api_token):
     file_api_root = __get_file_api_root(ib_host)
     url = os.path.join(file_api_root, folder)
 
-    params = {"expect-node-type": "folder"}
     headers = {"Authorization": "Bearer {0}".format(api_token)}
 
-    resp = requests.get(url, headers=headers, params=params)
+    paths = []
+    has_more = None
+    start_token = None
 
-    # Verify request is successful
-    content = json.loads(resp.content)
-    if resp.status_code != 200 or (
-        "status" in content and content["status"] == "ERROR"
-    ):
-        raise Exception(f"Error checking job status: {resp.content}")
+    while has_more is not False:
+        params = {"expect-node-type": "folder", "start-token": start_token}
+        resp = requests.get(url, headers=headers, params=params)
 
-    nodes = content["nodes"]
-    return [node["full_path"] for node in nodes]
+        # Verify request is successful
+        content = json.loads(resp.content)
+        if resp.status_code != 200 or (
+                "status" in content and content["status"] == "ERROR"
+        ):
+            raise Exception(f"Error checking job status: {resp.content}")
+
+        nodes = content["nodes"]
+        paths += [node["full_path"] for node in nodes]
+
+        has_more = content['has_more']
+        start_token = content['next_page_token']
+    return paths
 
 
 def wait_until_job_finishes(ib_host, job_id, job_type, api_token):
@@ -499,7 +508,6 @@ def deploy_solution(ib_host, api_token, ibsolution_path):
     file_api_root = __get_file_api_root(ib_host, add_files_suffix=False)
     headers = {"Authorization": "Bearer {0}".format(api_token)}
     url = f"{file_api_root}/solutions/deployed"
-
 
     args = {
         "solution_path": ibsolution_path,

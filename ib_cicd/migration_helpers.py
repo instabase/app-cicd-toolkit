@@ -404,6 +404,4 @@ def publish_dependencies(uploaded_ibsolutions, ib_host, api_token):
     """
     for ib_solution_path in uploaded_ibsolutions:
         publish_resp = publish_to_marketplace(ib_host, api_token, ib_solution_path)
-        logging.info(
-            "Publish response for %s: %s", ib_solution_path, publish_resp
-        )
+        logging.info("Publish response for %s: %s", ib_solution_path, publish_resp)
