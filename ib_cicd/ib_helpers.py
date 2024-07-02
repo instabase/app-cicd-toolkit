@@ -430,15 +430,15 @@ def list_directory(ib_host, folder, api_token):
         # Verify request is successful
         content = json.loads(resp.content)
         if resp.status_code != 200 or (
-                "status" in content and content["status"] == "ERROR"
+            "status" in content and content["status"] == "ERROR"
         ):
             raise Exception(f"Error checking job status: {resp.content}")
 
         nodes = content["nodes"]
         paths += [node["full_path"] for node in nodes]
 
-        has_more = content['has_more']
-        start_token = content['next_page_token']
+        has_more = content["has_more"]
+        start_token = content["next_page_token"]
     return paths
 
 
