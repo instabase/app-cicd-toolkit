@@ -1,14 +1,10 @@
 import time
 
-import requests
-import logging
 import json
-
+import pathlib
 import os
 import shutil
-from urllib.parse import quote
 import argparse
-import re
 
 from ib_cicd.ib_helpers import (
     unzip_files,
@@ -18,12 +14,17 @@ from ib_cicd.ib_helpers import (
     publish_to_marketplace,
     delete_folder_or_file_from_ib,
     deploy_solution,
+    list_directory,
 )
 from ib_cicd.migration_helpers import (
     download_ibsolution,
     compile_and_package_ib_solution,
     download_dependencies_from_dev_and_upload_to_prod,
+    publish_dependencies,
 )
+from dotenv import load_dotenv
+
+load_dotenv()
 
 TARGET_IB_API_TOKEN = os.environ.get("TARGET_IB_API_TOKEN")
 SOURCE_IB_API_TOKEN = os.environ.get("SOURCE_IB_API_TOKEN")
@@ -74,24 +75,19 @@ def version_tuple(v):
     return tuple(map(int, (v.split("."))))
 
 
-def get_latest_ibsolution_path(api_token, files_api, solution_path):
-    headers = {"Authorization": "Bearer {0}".format(api_token)}
-    params = {"expect-node-type": "folder"}
-    url = os.path.join(files_api, quote(solution_path))
-    resp = requests.get(url, headers=headers, params=params, verify=False)
-    # TODO: Check status code
-
-    nodes = json.loads(resp.content)
-    paths = [
-        s["full_path"] for s in nodes["nodes"] if s["full_path"].endswith(".ibsolution")
-    ]
-
+def get_latest_ibsolution_path(api_token, ib_host, solution_path, solution_name=None):
+    paths = list_directory(ib_host, solution_path, api_token)
+    paths = [p for p in paths if p.endswith(".ibsolution")]
+    if len(paths) == 0:
+        raise Exception(f"No .ibsolution files found in {solution_path}")
     latest_version = "0.0.0"
     latest_path = ""
     for path in paths:
-        sol_name = path.split(".ibsoluton")[0].split("/")[-1]
-        start, end = re.search("-[0-9]*.[0-9]*.[0-9]*", sol_name).span()
-        version = sol_name[start + 1 : end]
+        p = pathlib.Path(path)
+        sol_name = p.stem
+        if solution_name and solution_name not in sol_name:
+            continue
+        version = sol_name.split("-")[-1]
         if version_tuple(version) > version_tuple(latest_version):
             latest_version = version
             latest_path = path
@@ -102,7 +98,7 @@ def read_target_package():
     # Unzip solution into a temporary folder
     new_path = os.path.join(*TARGET_IB_PATH.split("/")[:-1], "temp_solution")
     path_to_ib_solution = get_latest_ibsolution_path(
-        TARGET_IB_API_TOKEN, TARGET_FILES_API, TARGET_IB_PATH
+        TARGET_IB_API_TOKEN, TARGET_IB_HOST, TARGET_IB_PATH
     )
     unzip_files(
         TARGET_IB_HOST, TARGET_IB_API_TOKEN, path_to_ib_solution, new_path
@@ -181,7 +177,7 @@ def main():
 
     if args.publish_source_solution or args.local_flow or args.remote_flow:
         source_path = get_latest_ibsolution_path(
-            SOURCE_IB_API_TOKEN, SOURCE_FILES_API, SOURCE_COMPILED_SOLUTIONS_PATH
+            SOURCE_IB_API_TOKEN, SOURCE_IB_HOST, SOURCE_COMPILED_SOLUTIONS_PATH
         )
         if args.marketplace:
             publish_to_marketplace(SOURCE_IB_HOST, SOURCE_IB_API_TOKEN, source_path)
@@ -207,7 +203,7 @@ def main():
             )
         else:
             ib_solution_path = get_latest_ibsolution_path(
-                SOURCE_IB_API_TOKEN, SOURCE_FILES_API, SOURCE_COMPILED_SOLUTIONS_PATH
+                SOURCE_IB_API_TOKEN, SOURCE_IB_HOST, SOURCE_COMPILED_SOLUTIONS_PATH
             )
             resp = download_ibsolution(
                 SOURCE_IB_HOST, SOURCE_IB_API_TOKEN, ib_solution_path
@@ -217,7 +213,7 @@ def main():
 
     if args.publish_target_solution or args.local_flow or args.remote_flow:
         ib_solution_path = get_latest_ibsolution_path(
-            TARGET_IB_API_TOKEN, TARGET_FILES_API, TARGET_IB_PATH
+            TARGET_IB_API_TOKEN, TARGET_IB_HOST, TARGET_IB_PATH
         )
         if args.marketplace:
             publish_to_marketplace(
@@ -244,19 +240,11 @@ def main():
             TARGET_IB_PATH,
             requirements_dict,
         )
-
-        # Publish uploaded ibsolution files to target environment marketplace
-        for ib_solution_path in uploaded_ibsolutions:
-            publish_resp = publish_to_marketplace(
-                TARGET_IB_HOST, TARGET_IB_API_TOKEN, ib_solution_path
-            )
-            logging.info(
-                "Publish response for {}: {}".format(ib_solution_path, publish_resp)
-            )
+        publish_dependencies(uploaded_ibsolutions, TARGET_IB_HOST, TARGET_IB_API_TOKEN)
 
     if args.download_ibsolution or args.local_flow or args.remote_flow:
         ib_solution_path = get_latest_ibsolution_path(
-            TARGET_IB_API_TOKEN, TARGET_FILES_API, TARGET_IB_PATH
+            TARGET_IB_API_TOKEN, TARGET_IB_HOST, TARGET_IB_PATH
         )
         download_ibsolution(
             TARGET_IB_HOST,
