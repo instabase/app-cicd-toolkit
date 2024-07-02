@@ -500,8 +500,6 @@ def deploy_solution(ib_host, api_token, ibsolution_path):
     headers = {"Authorization": "Bearer {0}".format(api_token)}
     url = f"{file_api_root}/solutions/deployed"
 
-    print("**!!!!!!!")
-    print(ibsolution_path)
 
     args = {
         "solution_path": ibsolution_path,
