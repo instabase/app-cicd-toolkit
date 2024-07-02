@@ -102,7 +102,7 @@ If you're not using CI tooling and running the script locally you will need to s
     - **FLOW_NAME** Name of flow to promote
     - **WORKSPACE_DRIVE_PATH** Path in source IB environment's filesystem to the drive where the solution builder project is stored, e.g. hannahroiter/ci-cd/fs/Instabase Drive
     - **DEPENDENCIES** String representation of list of model and marketplace package dependencies in the format `model_name==0.0.1,package_name==0.4.5,second_package==0.0.1`
-3. Copy `cicd` folder into repository and move one of the `.yml` template workflow files into a `.GitHub/workflows` folder
+3. Copy `ib_cicd` folder into repository and move one of the `.yml` template workflow files into a `.GitHub/workflows` folder
 
 ### Local Workflow - filesystem projects only
 
