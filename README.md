@@ -39,6 +39,8 @@ The Python `promote_solution.py` script calls Instabase APIs and can execute the
 
 #### Solution builder projects: promote_sb_solution.py
 
+##### **NOTE: Solution builder projects supported from 23.07**
+
 - `--compile_source_solution`
   - Compiles solution in source environment in path specified in `SOURCE_SOLUTION_DIR` environment variable.
 - `--deploy_source_solution`

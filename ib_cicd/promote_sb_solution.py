@@ -83,10 +83,12 @@ def get_sb_flow_path(solution_builder_name, flow_name, ib_root, ib_host, ib_toke
         ).content
         metadata = json.loads(read_response)
         if metadata["name"] == flow_name:
-            version = list_directory(ib_host, os.path.join(path, "versions"), ib_token)[
-                0
-            ]
-            return version
+            # version = list_directory(ib_host, os.path.join(path, "versions"), ib_token)[
+            #     0
+            # ]
+            flow_version = metadata["versions_tree"]["version_id"]
+            flow_path = os.path.join(path, "versions", flow_version)
+            return flow_path
 
 
 def parse_dependencies_from_env(dependencies):
@@ -101,19 +103,19 @@ def parse_dependencies_from_env(dependencies):
     }
 
 
-def upload_icon(ib_host, ib_token, path, icon_path="icon.png"):
+def upload_icon(ib_host, ib_token, upload_path, icon_path="icon.png"):
     """
     Uploads a local png file to the IB filesystem
     :param ib_host: (string) IB host URL (e.g. https://platform.instabase.com/)
     :param ib_token: (string) API token for IB environment
-    :param path: (string) IB path to upload icon
+    :param upload_path: (string) IB path to upload icon
     :param icon_path: (string) optional local path to read icon
     :return: Response object return from upload request
     """
     with open(icon_path, "rb") as image:
         f = image.read()
         b = bytearray(f)
-    resp = upload_file(ib_host, ib_token, path, b)
+    resp = upload_file(ib_host, ib_token, upload_path, b)
     return resp
 
 
