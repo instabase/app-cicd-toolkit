@@ -20,9 +20,10 @@ steps:
   displayName: 'Use Python $(python.version)'
 
 - script: |
-    python -m pip install --upgrade pip
-    pip install -r requirements.txt
-  displayName: 'Install dependencies'
+      python -m pip install --upgrade pip
+      pip install pipx
+      pipx install https://github.com/instabase/app-cicd-toolkit/releases/download/0.0.2/instabase_app_cicd_toolkit-0.0.2-py3-none-any.whl
+  displayName: 'Install ib-cicd library'
 
 - script: |
     export TARGET_IB_API_TOKEN="$(TARGET_IB_API_TOKEN)"
@@ -35,5 +36,5 @@ steps:
     export SOURCE_COMPILED_SOLUTIONS_PATH="$(SOURCE_COMPILED_SOLUTIONS_PATH)"
     export LOCAL_SOLUTION_DIR="$(LOCAL_SOLUTION_DIR)"
     export REL_FLOW_PATH="$(REL_FLOW_PATH)"
-    python cicd/promote_solution.py --remote_flow --download_ibsolution --set_azure_devops_env_var
+    ib-cicd --remote_flow --download_ibsolution --set_azure_devops_env_var
   displayName: 'Promote solution'
