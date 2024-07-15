@@ -36,6 +36,8 @@ SOURCE_SOLUTION_DIR = os.environ.get("SOURCE_SOLUTION_DIR")
 SOURCE_COMPILED_SOLUTIONS_PATH = os.environ.get("SOURCE_COMPILED_SOLUTIONS_PATH")
 LOCAL_SOLUTION_DIR = os.environ.get("LOCAL_SOLUTION_DIR")
 REL_FLOW_PATH = os.environ.get("REL_FLOW_PATH")
+REL_PACKAGE_JSON_PATH = os.environ.get("REL_PACKAGE_JSON_PATH")
+REL_ICON_PATH = os.environ.get("REL_ICON_PATH")
 
 TARGET_FILES_API = os.path.join(*[TARGET_IB_HOST, "api/v2", "files"])
 SOURCE_FILES_API = os.path.join(*[SOURCE_IB_HOST, "api/v2", "files"])
@@ -133,8 +135,12 @@ def set_output_version_github(version):
 
 
 def copy_solution_to_working_dir(new_solution_dir):
-    package_path = os.path.join(SOURCE_SOLUTION_DIR, "package.json")
-    icon_path = os.path.join(SOURCE_SOLUTION_DIR, "icon.png")
+    rel_package_path = REL_PACKAGE_JSON_PATH and os.path.join(SOURCE_SOLUTION_DIR, REL_PACKAGE_JSON_PATH)
+    rel_icon_path = REL_ICON_PATH and os.path.join(SOURCE_SOLUTION_DIR, REL_ICON_PATH)
+
+    package_path = rel_package_path or os.path.join(SOURCE_SOLUTION_DIR, "package.json")
+    icon_path = rel_icon_path or os.path.join(SOURCE_SOLUTION_DIR, "icon.png")
+    
     flow_path = os.path.join(SOURCE_SOLUTION_DIR, REL_FLOW_PATH)
     modules_path = os.path.join(
         SOURCE_SOLUTION_DIR, *REL_FLOW_PATH.split("/")[:-1], "modules"
@@ -146,6 +152,25 @@ def copy_solution_to_working_dir(new_solution_dir):
             SOURCE_IB_HOST, SOURCE_IB_API_TOKEN, path, new_path, use_clients=False
         )
 
+
+def copy_target_zip_to_working_dir(new_solution_dir):
+    target_solution_dir = os.path.join(TARGET_IB_PATH, LOCAL_SOLUTION_DIR)
+    
+    package_path = os.path.join(target_solution_dir, "package.json")
+    icon_path = os.path.join(target_solution_dir, "icon.png")
+    
+    flow_path = os.path.join(target_solution_dir, REL_FLOW_PATH.split("/")[-1])
+    modules_path = os.path.join(
+        target_solution_dir, "modules"
+    )
+
+    print(f"****\n{new_solution_dir=}\n{target_solution_dir=}\n {modules_path=}\n {package_path=} \npackage_path_2={os.path.join(target_solution_dir, 'package.json')}****")
+    for path in [package_path, icon_path, flow_path, modules_path]:
+        new_path = path.replace(target_solution_dir, new_solution_dir)
+        copy_file_within_ib(
+            TARGET_IB_HOST, TARGET_IB_API_TOKEN, path, new_path, use_clients=False
+        )
+        time.sleep(3)
 
 def main():
     parser = argparse.ArgumentParser()
@@ -197,12 +222,15 @@ def main():
             unzip_files(TARGET_IB_HOST, TARGET_IB_API_TOKEN, zip_path)
 
             directory_path = os.path.join(TARGET_IB_PATH, LOCAL_SOLUTION_DIR)
+            new_solution_dir = os.path.join(TARGET_IB_PATH, "compiled", LOCAL_SOLUTION_DIR)
+            copy_target_zip_to_working_dir(new_solution_dir)
+            
             time.sleep(3)
             compile_and_package_ib_solution(
                 TARGET_IB_HOST,
                 TARGET_IB_API_TOKEN,
-                directory_path,
-                REL_FLOW_PATH,
+                new_solution_dir,
+                REL_FLOW_PATH.split("/")[-1],
                 TARGET_IB_PATH,
             )
         else:
