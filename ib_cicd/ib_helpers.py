@@ -382,28 +382,71 @@ def check_job_status(ib_host, job_id, job_type, api_token):
     return resp
 
 
-def wait_until_job_finishes(ib_host, job_id, job_type, api_token):
+def check_file_ops_status(ib_host, job_id, job_type, api_token):
+    """
+    Checks on status of a job id using the Job Status API (https://www.instabase.com/docs/apis/jobs/index.html#job-status)
+
+    :param ib_host: (string) IB host url (e.g. https://www.instabase.com)
+    :param job_id: (string) job id to look into
+    :param job_type: (string) job type [copy, move, delete, extract]
+    :param api_token: (string) api token for IB environment
+    :return: Response object
+    """
+    url = ib_host + f"/api/v2/files/{job_type}/jobs/{job_id}"
+
+    headers = {"Authorization": "Bearer {0}".format(api_token)}
+
+    resp = requests.get(url, headers=headers, verify=False)
+
+    # Verify request is successful
+    content = json.loads(resp.content)
+    if resp.status_code != 200 or (
+        "state" in content and content["state"] == "ERROR"
+    ):
+        raise Exception(f"Error checking job status: {resp.content}")
+
+    return resp
+
+
+def wait_until_job_finishes(ib_host, job_id, job_type, api_token, operation_type='job', max_retries=10):
     """
     Helper function to continuously wait until a job finishes (uses job status api to determine this)
 
     :param ib_host: (string) IB host url (e.g. https://www.instabase.com)
     :param job_id: (string) job id to look into
-    :param job_type: (string) job type [flow, refiner, job, async, group]
+    :param job_type: (string) job type (operation_type=job: flow, refiner, job, async, group), 
+        (operation_type=file_ops: copy, move, delete, extract)
     :param api_token: (string) api token for IB environment
+    :param operation_type: (string) operation type [flow, file_ops]
 
     :return: bool indicating whether job completed successfully
     """
     still_running = True
-    while still_running:
-        job_status_response = check_job_status(ib_host, job_id, job_type, api_token)
+    job_status_callbacks = {
+        "file_ops": check_file_ops_status,
+        "job": check_job_status
+    }
+    valid_operation_types = {
+        "file_ops": ['copy', 'move', 'delete', 'extract'],
+        "job": ['flow', 'refiner', 'job','async', 'group']
+    }
+    if job_type not in valid_operation_types[operation_type]:
+        raise Exception(f"Invalid job type {job_type} for the passed operation type {operation_type}!")
+    
+    job_status_callback = job_status_callbacks[operation_type]
+
+    retry_count = 0
+    while still_running and retry_count < max_retries:
+        job_status_response = job_status_callback(ib_host, job_id, job_type, api_token)
         job_status_response_content = json.loads(job_status_response.content)
-        status = job_status_response_content["status"]
+
         state = job_status_response_content["state"]
 
-        if status != "OK":
+        if operation_type == "job" and job_status_response_content["status"] != "OK":
             return False
 
-        still_running = state != "DONE" and state != "COMPLETE"
+        still_running = not state in ("DONE", "COMPLETE", "FAILED")
+        retry_count += 1
         time.sleep(5)
 
     return True
@@ -453,7 +496,6 @@ def deploy_solution(ib_host, api_token, ibsolution_path):
         "solution_path": ibsolution_path,
     }
     json_data = json.dumps(args)
-
     resp = requests.post(url, headers=headers, data=json_data, verify=False)
 
     try:

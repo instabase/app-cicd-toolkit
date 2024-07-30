@@ -18,6 +18,7 @@ from ib_cicd.ib_helpers import (
     publish_to_marketplace,
     delete_folder_or_file_from_ib,
     deploy_solution,
+    wait_until_job_finishes
 )
 from ib_cicd.migration_helpers import (
     download_ibsolution,
@@ -164,13 +165,21 @@ def copy_target_zip_to_working_dir(new_solution_dir):
         target_solution_dir, "modules"
     )
 
-    print(f"****\n{new_solution_dir=}\n{target_solution_dir=}\n {modules_path=}\n {package_path=} \npackage_path_2={os.path.join(target_solution_dir, 'package.json')}****")
+    copy_jobs = []
     for path in [package_path, icon_path, flow_path, modules_path]:
+        original_path = path
         new_path = path.replace(target_solution_dir, new_solution_dir)
-        copy_file_within_ib(
-            TARGET_IB_HOST, TARGET_IB_API_TOKEN, path, new_path, use_clients=False
+        copy_job = copy_file_within_ib(
+            TARGET_IB_HOST, TARGET_IB_API_TOKEN, original_path
+            , new_path, use_clients=False
         )
-        time.sleep(3)
+        copy_jobs.append(copy_job)
+
+    for job in copy_jobs:
+        copy_job = job.headers
+        job_id = copy_job['location'].split("/")[-1]
+        wait_until_job_finishes(TARGET_IB_HOST, job_id, 'copy', TARGET_IB_API_TOKEN, operation_type='file_ops')
+
 
 def main():
     parser = argparse.ArgumentParser()
@@ -219,13 +228,15 @@ def main():
 
             # Unzip solution contents
             zip_path = os.path.join(*[TARGET_IB_PATH, LOCAL_SOLUTION_DIR + ".zip"])
-            unzip_files(TARGET_IB_HOST, TARGET_IB_API_TOKEN, zip_path)
+
+            unzip_resp = unzip_files(TARGET_IB_HOST, TARGET_IB_API_TOKEN, zip_path)
+            unzip_job_id = unzip_resp.headers['location'].split("/")[-1]
+            wait_until_job_finishes(TARGET_IB_HOST, unzip_job_id, 'extract', TARGET_IB_API_TOKEN, operation_type='file_ops')
 
             directory_path = os.path.join(TARGET_IB_PATH, LOCAL_SOLUTION_DIR)
             new_solution_dir = os.path.join(TARGET_IB_PATH, "compiled", LOCAL_SOLUTION_DIR)
             copy_target_zip_to_working_dir(new_solution_dir)
             
-            time.sleep(3)
             compile_and_package_ib_solution(
                 TARGET_IB_HOST,
                 TARGET_IB_API_TOKEN,
