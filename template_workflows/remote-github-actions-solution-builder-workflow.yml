@@ -1,10 +1,6 @@
-name: Local Solution Promotion
+name: Remote Solution Promotion
 
-on:
-  pull_request:
-    types:
-      - closed
-    branches: [ "main" ]
+on: workflow_dispatch
 
 permissions:
   contents: read
@@ -12,7 +8,6 @@ permissions:
 jobs:
 
   build:
-    if: github.event.pull_request.merged == true
     runs-on: ubuntu-latest
 
     permissions:
@@ -21,7 +16,6 @@ jobs:
     steps:
     - uses: actions/checkout@v3
       with:
-        ref: ${{ github.event.pull_request.merge_commit_sha }}
         fetch-depth: '0'
 
     - name: Set up Python 3.10
@@ -31,8 +25,8 @@ jobs:
     - name: Install dependencies
       run: |
         python -m pip install --upgrade pip
-        pip install flake8 pytest
-        if [ -f requirements.txt ]; then pip install -r requirements.txt; fi
+        pip install pipx
+        pipx install https://github.com/instabase/app-cicd-toolkit/releases/download/0.0.2/instabase_app_cicd_toolkit-0.0.2-py3-none-any.whl
     - name: Upload and compile IB solution
       env:
         TARGET_IB_API_TOKEN: ${{ secrets.TARGET_IB_API_TOKEN }}
@@ -41,13 +35,26 @@ jobs:
         SOURCE_IB_HOST: ${{ vars.SOURCE_IB_HOST }}
         TARGET_IB_PATH: ${{ vars.TARGET_IB_PATH }}
         SOURCE_WORKING_DIR: ${{ secrets.SOURCE_WORKING_DIR }}
-        DEV_IB_HOSTSOURCE_SOLUTION_DIR: ${{ vars.SOURCE_SOLUTION_DIR }}
+        SOURCE_SOLUTION_DIR: ${{ vars.SOURCE_SOLUTION_DIR }}
         SOURCE_COMPILED_SOLUTIONS_PATH: ${{ vars.SOURCE_COMPILED_SOLUTIONS_PATH }}
         LOCAL_SOLUTION_DIR: ${{ vars.LOCAL_SOLUTION_DIR }}
         REL_FLOW_PATH: ${{ vars.REL_FLOW_PATH }}
-
+        
       run: |
-        python -u cicd/promote_solution.py --local_flow --download_ibsolution --set_github_actions_env_var
+        ib-cicd --remote_flow --download_ibsolution --set_github_actions_env_var
+
+    - name: Commit changes
+      run: |
+        git config --global user.email "no-reply@github.com"
+        git config --global user.name "GitHub Actions"
+        git config --global --add safe.directory /__w/${{ github.event.repository.name }}/*
+        git add '*.ibsolution'
+        git commit -m "Add ibsolution file"
+        git tag -a ${{ env.PACKAGE_VERSION }}
+        git push
+        echo ${{ env.PACKAGE_VERSION }}
+      env:
+        GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
 
     - name: Create release and upload artifacts
       uses: ncipollo/release-action@v1

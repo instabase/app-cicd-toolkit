@@ -1,6 +1,6 @@
 [project]
 name = "instabase-app-cicd-toolkit"
-version = "0.0.1"
+version = "0.0.2"
 requires-python = ">=3.10"
 authors = [
     { name = "Hannah Roiter", email = "hannah.roiter@instabase.com" },
@@ -28,6 +28,7 @@ test = [
 
 [project.scripts]
 ib-cicd = "ib_cicd.promote_solution:main"
+ib-cicd-solution-builder = "ib_cicd.promote_sb_solution:main"
 
 [build-system]
 requires = ["hatchling"]
